@@ -1,9 +1,12 @@
 import pygame
+from pygame.sprite import Sprite
 
-class Ship():
-    def __init__(self, screen):
+class Ship(Sprite):
+    def __init__(self, ai_settings, screen):
         """初始化飞船并设置其初始位置"""
+        super().__init__()
         self.screen = screen
+        self.ai_settings = ai_settings
 
         #加载飞船图像
         self.image = pygame.image.load('images/ship.bmp')
@@ -21,36 +24,14 @@ class Ship():
         self.top = float(self.rect.top)
 
         #移动标志
-        self.moving_right = False
-        self.moving_left = False
-        self.moving_up = False
-        self.moving_down = False
+        #self.moving_right = False
+        #self.moving_left = False
+        #上下移动
+        #self.moving_up = False
+        #self.moving_down = False
 
-    def update(self, screen):
+    def update(self):
         """根据移动标志调整飞船位置"""
-        self.screen_rect = screen.get_rect()
-        if screen.get_width() == 1200:
-            if self.moving_right and self.rect.right < self.screen_rect.right:
-                self.center += 1
-                #print(self.moving_right)
-            elif self.moving_left and self.rect.left > 0:
-                self.center -= 1
-            elif self.moving_up and self.rect.top > 0:
-                self.top -= 1
-            elif self.moving_down and self.rect.bottom < self.screen_rect.bottom:
-                self.top += 1
-        elif screen.get_width() == 1280:
-            if self.moving_right and self.rect.right < self.screen_rect.right:
-                self.center += 1 * \
-                    float(1280/1200)
-            elif self.moving_left and self.rect.left > 0:
-                self.center -= 1 * \
-                    float(1280/1200)
-            elif self.moving_up and self.rect.top > 0:
-                self.top -= 1 * float(697/600)
-            elif self.moving_down and self.rect.bottom < self.screen_rect.bottom:
-                self.top += 1 * float(697/600)
-
         self.rect.centerx = self.center
         self.rect.top = self.top
 
@@ -74,5 +55,27 @@ class Ship():
         #更新位置信息
         self.center = float(self.rect.centerx)
         self.top = float(self.rect.top)
-        #输出位置
+        #跟踪rect位置
         self.screen.blit(self.image, self.rect)
+
+
+        #self.screen_rect = screen.get_rect()
+        #if screen.get_width() == 1200:
+        #if self.moving_right and self.rect.right < self.screen_rect.right:
+            #self.center += self.ai_settings.ship_speed_factor
+            #print(self.moving_right)
+        #elif self.moving_left and self.rect.left > 0:
+            #self.center -= self.ai_settings.ship_speed_factor
+            #elif self.moving_up and self.rect.top > 0:
+               #self.top -= self.ai_settings.ship_speed_factor
+            #elif self.moving_down and self.rect.bottom < self.screen_rect.bottom:
+               #self.top += self.ai_settings.ship_speed_factor
+        #elif screen.get_width() == 1280:
+            #if self.moving_right and self.rect.right < self.screen_rect.right:
+               #self.center += self.ai_settings.ship_speed_factor * float(1280/1200)
+            #elif self.moving_left and self.rect.left > 0:
+               #self.center -= self.ai_settings.ship_speed_factor * float(1280/1200)
+            #elif self.moving_up and self.rect.top > 0:
+               #self.top -= self.ai_settings.ship_speed_factor * float(697/600)
+            #elif self.moving_down and self.rect.bottom < self.screen_rect.bottom:
+               #self.top += self.ai_settings.ship_speed_factor * float(697/600)

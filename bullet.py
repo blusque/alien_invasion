@@ -25,12 +25,11 @@ class Bullet(Sprite):
 
         self.bullet_fired = False
 
-    def update(self, screen):
-        self.screen_rect = screen.get_rect()
-        if screen.get_width() == 1200:
-            self.y -= self.speed_factor
-        elif screen.get_width() == 1280:
-            self.y -= self.speed_factor * (1280/1200)
+    def update(self):
+        #if screen.get_width() == 1200:
+        self.y -= self.speed_factor
+        #elif screen.get_width() == 1280:
+            #self.y -= self.speed_factor * (1280/1200)
         self.rect.y = self.y
 
     def draw_bullet(self, screen):
