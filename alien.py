@@ -2,7 +2,7 @@ import pygame
 from pygame.sprite import Sprite
 
 class  Alien(Sprite):
-    def __init__(self, ai_settings, screen, row, column):
+    def __init__(self, ai_settings, screen):
         super().__init__()
         self.screen = screen
         self.ai_settings = ai_settings
@@ -17,37 +17,27 @@ class  Alien(Sprite):
         self.rect = self.image.get_rect()
 
         #每个外星人最初都在屏幕左上角附近
-        self.rect.x = column*120 + 36
-        self.rect.y = row*80 + 30
+        self.rect.x = self.rect.width
+        self.rect.y = self.rect.height
 
         #储存外星人准确位置
         self.x = float(self.rect.x)
         self.y = float(self.rect.y)
 
-        self.speed_x = self.ai_settings.alien_speed_factor[0]
-        self.speed_y = self.ai_settings.alien_speed_factor[1]
+        self.speed_x = self.ai_settings.alien_speed_factor
+        self.down_speed = self.ai_settings.alien_down_speed
 
         self.down_stairs = False
         
-    def update(self, lines):
-        self.x += self.speed_x
-        self.y += self.speed_y
-
-        for line in lines:
-            for alien in line:
-                if alien.rect.right >= self.screen_rect.width:
-                    if self.speed_x > 0:
-                        self.speed_x = -self.speed_x
-                    self.x += self.speed_x
-                    self.y += 3
-                elif alien.rect.left <= 0:
-                    if self.speed_x < 0:
-                        self.speed_x = -self.speed_x
-                    self.x += self.speed_x
-                    self.y += 3
-
+    def update(self):
+        """水平移动外星人"""
+        self.x += self.speed_x * self.ai_settings.alien_x_direct
         self.rect.x = self.x
-        self.rect.y = self.y
+
+    def check_edge(self):
+        """检测外星人是否在边缘"""
+        if self.rect.right >= self.screen_rect.right or self.rect.left <= 0:
+            return True
 
     def blitme(self, screen):
         """在准确位置绘制外星人"""

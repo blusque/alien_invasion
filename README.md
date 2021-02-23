@@ -14,7 +14,7 @@ Remember **YOU** are **DESIGNED** to kill them!
 ## iTems
 
 - ***ships***
-    - waiting...
+  - waiting...
 
 ## Requirement
 
