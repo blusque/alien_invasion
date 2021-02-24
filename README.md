@@ -19,4 +19,4 @@ Remember **YOU** are **DESIGNED** to kill them!
 ## Requirement
 
 You need:  
-`python` and `pygame ~= 2.0.1`
+`python 3.~` and `pygame ~= 2.0.1`

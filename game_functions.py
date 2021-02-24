@@ -1,25 +1,37 @@
 import random as rd
 import sys
+from time import sleep
 
 import pygame
 
 from alien import Alien
 from bullet import Bullet
-from ship import Ship 
-from time import sleep
+from game_stats import Statistic
+from ship import Ship
 
+def reset(ai_settings, aliens, bullets, ships, stats, init):
+    aliens.empty()
+    bullets.empty()
+    ships.empty()
+    ai_settings.lives = ai_settings.origin_lives
+    stats.score = ai_settings.basic
+    init.assign(True)
 
 class CheckEvent():
     """一个用于处理事件的类"""
 
-    def __init__(self, ships, bullets, ai_settings, screen, aliens, play_button, status):
+    def __init__(self, ships, bullets, ai_settings, screen, aliens, play_button, restart_button, exit_button, status, stats, init):
         self.ships = ships
         self.bullets = bullets
         self.ai_settings = ai_settings
         self.screen = screen
         self.aliens = aliens
         self.play_button = play_button
+        self.restart_button = restart_button
+        self.exit_button = exit_button
         self.status = status
+        self.stats = stats
+        self.init = init
 
     def check_keydown_event(self, event):
         if event.key == pygame.K_SPACE:
@@ -47,11 +59,17 @@ class CheckEvent():
                 ship.center += 2
         #print("[MOUSEMOTION]: ", event.pos)
 
-    def check_mousebuttondown_event(self, event):
+    def check_mousebuttondown_event(self):
         mouse = {}
         mouse['x'], mouse['y'] = pygame.mouse.get_pos()
-        if self.play_button.rect.collidepoint(mouse['x'], mouse['y']):
+        if self.play_button.rect.collidepoint(mouse['x'], mouse['y']) and self.status.game_active == False:
             self.status.game_active = True
+        elif self.status.game_active:
+            self.status.game_active = False
+        elif self.exit_button.rect.collidepoint(mouse['x'], mouse['y']):
+            sys.exit()
+        elif self.restart_button.rect.collidepoint(mouse['x'], mouse['y']):
+            reset(self.ai_settings, self.aliens, self.bullets, self.ships, self.stats, self.init)
 
 
     def check_event(self):
@@ -66,13 +84,13 @@ class CheckEvent():
                 CheckEvent.check_mousemotion_event(self, event)
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                CheckEvent.check_mousebuttondown_event(self, event)
+                CheckEvent.check_mousebuttondown_event(self)
 
 
 class CreateAlien():
     """一个用于创建外星人的类"""
 
-    def __init__(self, ai_settings, screen, aliens):
+    def __init__(self, ai_settings, screen, aliens, level):
         self.ai_settings = ai_settings
         self.screen = screen
         self.aliens = aliens
@@ -80,6 +98,8 @@ class CreateAlien():
         self.alien = Alien(ai_settings, screen)
         self.screen_height = ai_settings.screen_height
         self.screen_width = ai_settings.screen_width
+        self.init_y = 0
+        self.level = level
 
     def __get_alien_width(self):
         """获取外星人的宽度"""
@@ -107,7 +127,7 @@ class CreateAlien():
             """创建一个外星人"""
             alien = Alien(self.ai_settings, self.screen)
             alien.x = alien_width + 2*alien_width*alien_number
-            alien.y = alien_height + 1.5*alien_height*row
+            alien.y = alien_height + 1.5*alien_height*row + self.init_y
             alien.rect.x = alien.x
             alien.rect.y = alien.y
             self.aliens.add(alien)
@@ -119,7 +139,8 @@ class CreateAlien():
         alien_width = CreateAlien.__get_alien_width(self)
         alien_height = CreateAlien.__get_alien_height(self)
         number_aliens_x = CreateAlien.__get_number_aliens_x(self,alien_width)
-        number_rows = CreateAlien.__get_number_rows(self, alien_height)
+        number_rows = CreateAlien.__get_number_rows(self, alien_height) + 5 * self.level
+        self.init_y = -(number_rows * 1.5 * alien_height) - 30
 
         #创建多行外星人
         for row in range(number_rows):
@@ -191,7 +212,7 @@ def create_ships(ai_settings, aliens, bullets, ships, screen):
 def alien_hitted(aliens):
     if alien_died(aliens):
         print('You Wiiiiiiiiiiiiiiiiiiiiiiiin!')
-        sys.exit()
+        aliens.create_fleet()
 
 
 def ship_init(ai_settings, aliens, bullets, ships, screen):
@@ -199,21 +220,9 @@ def ship_init(ai_settings, aliens, bullets, ships, screen):
         #print('You lose!')
         create_ships(ai_settings, aliens, bullets, ships, screen)
         #定义外星人生成
-        my_alien = CreateAlien(ai_settings, screen, aliens)
+        my_stats = Statistic(ai_settings, aliens, bullets, ships)
+        my_alien = CreateAlien(ai_settings, screen, aliens, my_stats.level)
         my_alien.create_fleet()
-
-        sleep(0.5)
-
-
-
-def check_collisions(aliens, bullets, ships):
-    #检测碰撞
-    collisions1 = pygame.sprite.groupcollide(bullets, aliens, True, True)
-    collisions2 = pygame.sprite.groupcollide(aliens, ships, True, True)
-    """
-    print(collisions1)
-    print(collisions2)
-    """
 
 def check_alien_get_bottom(aliens):
     #记录一次消失的飞船
@@ -223,6 +232,12 @@ def check_alien_get_bottom(aliens):
             aliens.remove(alien)
             count += 1
     return count
+
+def check_alien_left(ai_settings, screen, aliens):
+    if not len(aliens):
+        my_stats = Statistic(ai_settings, aliens = aliens)
+        my_alien = CreateAlien(ai_settings, screen, aliens, my_stats.level)
+        my_alien.create_fleet()
 
 
 
@@ -244,17 +259,25 @@ class GameStatus():
 
 
 
-def update_screen(ai_settings, screen, ships, bullets, aliens, play_button, status):
+def update_screen(ai_settings, screen, ships, bullets, aliens, 
+play_button, restart_button, exit_button, bar, score, status, stats):
     """更新屏幕上的图像，将屏幕切换为最新屏幕"""
     #重新填充屏幕
     screen.fill(ai_settings.bg_color)
     #判断碰撞
-    check_collisions(aliens, bullets, ships)
+    stats.check_collisions()
+    stats.get_alien_lose_score()
+    check_alien_left(ai_settings, screen, aliens)
     ships.draw(screen)
     aliens.draw(screen)
     bullet_draw(bullets, screen)
+    bar.bar_draw()
+    score.prep_scoreboard()
+    score.show_score()
     if not status.game_activity():
         play_button.draw_button()
+        restart_button.draw_button()
+        exit_button.draw_button()
     #让新屏幕可见
     pygame.display.flip()
         

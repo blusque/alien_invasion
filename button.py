@@ -28,3 +28,15 @@ class Button():
         #绘制一个用颜色填充的按钮，再绘制文本
         self.screen.fill(self.button_color, self.rect)
         self.screen.blit(self.msg_image, self.msg_image_rect)
+
+
+class SButton(Button):
+    def __init__(self, ai_settings, screen, msg, rect_x, rect_y, font_size):
+        super().__init__(ai_settings, screen, msg)
+        self.rect = pygame.Rect(0, 0, ai_settings.s_button_size[0], ai_settings.s_button_size[1])
+        self.rect.center = rect_x, rect_y
+        self.font = pygame.font.SysFont(None, font_size)
+        self.button_size = ai_settings.s_button_size
+        self.button_color = ai_settings.s_button_color
+
+        self.prep_msg(msg)

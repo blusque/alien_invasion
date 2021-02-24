@@ -5,10 +5,11 @@ from pygame.locals import *
 from pygame.sprite import Group
 
 import game_functions as gf
+from button import Button, SButton
 from game_functions import GameStatus
-from game_statis import Statistic
+from game_stats import Statistic
 from settings import Settings
-from button import Button
+from scoreboard import Bar, ScoreBoard
 
 #--------------------------------------------------------------------
 
@@ -28,17 +29,31 @@ def run_game():
     bullets = Group()
     #定义外星人组
     aliens = Group()
-    #定义按钮
-    play_button = Button(ai_settings, screen, "Play")
     #定义统计数据
     stats = Statistic(ai_settings, aliens, bullets, ships)
+    #定义头顶菜单
+    bar = Bar(screen)
+    score = ScoreBoard(ai_settings, stats, screen = screen)
+    #定义按钮
+    play_button = Button(ai_settings, screen, "Play")
+    restart_button = SButton(ai_settings, screen, "Restart", 540, 360, 32)
+    exit_button = SButton(ai_settings, screen, "Exit", 660, 360, 32)
     #定义状态
     status = GameStatus()
     #new_alien = Alien(ai_settings, screen)
     #aliens.add(new_alien)
+    #定义是否是第一次
+    class Init():
+        def __init__(self):
+            self.bool = True
+        
+        def assign(self, bool_sign):
+            self.bool = bool_sign
+    
+    init = Init()
     #定义事件检测
     ck = gf.CheckEvent(ships, bullets, ai_settings, 
-    screen, aliens, play_button, status)
+    screen, aliens, play_button, restart_button, exit_button, status, stats, init)
     #定义帧率
     fclk = pygame.time.Clock()
 #--------------------------------------------------------------------
@@ -63,7 +78,7 @@ def run_game():
 #-------------------------窗口刷新部分-----------------------------
         #每次循环都会重绘屏幕
         gf.update_screen(ai_settings, screen, ships, bullets, 
-        aliens, play_button, status)
+        aliens, play_button, restart_button, exit_button, bar, score, status, stats)
         fclk.tick(ai_settings.fps)
 #--------------------------------------------------------------------
 
