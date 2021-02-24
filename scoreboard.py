@@ -8,7 +8,7 @@ class Bar():
         self.rect = pg.Rect(0, 0, 1210, 45)
         self.rect.x = -5
         self.rect.y = -5
-        self.color = 230, 230, 230
+        self.color = 30, 30, 30
 
     def bar_draw(self):
         self.screen.fill(self.color, self.rect)
