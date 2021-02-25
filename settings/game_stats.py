@@ -1,14 +1,24 @@
 import pygame as pg
-import game_functions as gf
+import settings.game_functions as gf
+import os
+import json
+import time
 
 class Statistic:
     def __init__(self, ai_settings, aliens = None, bullets = None, ships = None):
+        BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        # __file__获取执行文件相对路径，整行为取上一级的上一级目录
+        self.filename = BASE_DIR + "\saves\data\score_data.json"
+        #print(self.filename)
+
         self.ai_settings = ai_settings
         self.aliens = aliens
         self.bullets = bullets
         self.ships = ships
         self.lives = ai_settings.lives
         self.score = ai_settings.basic
+        self.read_topscore()
+        self.old_top = self.topscore
         self.aliens_num = len(aliens.copy())
         self.bullets_num = ai_settings.bullet_contain
         self.time = pg.time.Clock()
@@ -16,6 +26,22 @@ class Statistic:
 
         #最近一次刷新时击落的外星人
         self.now_kill = 0
+
+    def read_topscore(self):
+        try:
+            with open(self.filename, 'r') as file_obj:
+                self.topscore = json.load(file_obj)
+        except FileNotFoundError:
+            self.topscore = 0
+
+    def fresh_topscore(self):
+        if self.score > self.topscore:
+            self.topscore = self.score
+
+    def write_topscore(self):
+        if self.topscore > self.old_top:
+            with open(self.filename, 'w') as file_obj:
+                json.dump(self.topscore, file_obj)
 
     def get_alien_lose_score(self):
         lose_alien = gf.check_alien_get_bottom(self.aliens)

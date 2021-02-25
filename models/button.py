@@ -31,12 +31,12 @@ class Button():
 
 
 class SButton(Button):
-    def __init__(self, ai_settings, screen, msg, rect_x, rect_y, font_size):
+    def __init__(self, ai_settings, screen, msg, button_size, button_color, rect_x, rect_y, font_size):
         super().__init__(ai_settings, screen, msg)
-        self.rect = pygame.Rect(0, 0, ai_settings.s_button_size[0], ai_settings.s_button_size[1])
+        self.rect = pygame.Rect(0, 0, button_size[0], button_size[1])
         self.rect.center = rect_x, rect_y
         self.font = pygame.font.SysFont(None, font_size)
-        self.button_size = ai_settings.s_button_size
-        self.button_color = ai_settings.s_button_color
+        self.button_size = button_size
+        self.button_color = button_color
 
         self.prep_msg(msg)

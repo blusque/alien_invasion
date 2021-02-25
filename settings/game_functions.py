@@ -1,13 +1,18 @@
 import random as rd
-import sys
+import sys, os
 from time import sleep
 
 import pygame
 
-from alien import Alien
-from bullet import Bullet
-from game_stats import Statistic
-from ship import Ship
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# __file__获取执行文件相对路径，整行为取上一级的上一级目录
+sys.path.append(BASE_DIR)
+
+
+from models.alien import Alien
+from models.bullet import Bullet
+from settings.game_stats import Statistic
+from models.ship import Ship
 
 def reset(ai_settings, aliens, bullets, ships, stats, init):
     aliens.empty()
@@ -42,6 +47,7 @@ class CheckEvent():
                     self.bullets.add(new_bullet)
         elif event.key == pygame.K_ESCAPE:
             #退出
+            self.stats.write_topscore()
             sys.exit()
         elif event.key == pygame.K_UP:
             self.ai_settings.up_speed()
@@ -67,6 +73,7 @@ class CheckEvent():
         elif self.status.game_active:
             self.status.game_active = False
         elif self.exit_button.rect.collidepoint(mouse['x'], mouse['y']):
+            self.stats.write_topscore()
             sys.exit()
         elif self.restart_button.rect.collidepoint(mouse['x'], mouse['y']):
             reset(self.ai_settings, self.aliens, self.bullets, self.ships, self.stats, self.init)
@@ -75,6 +82,7 @@ class CheckEvent():
     def check_event(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                self.stats.write_topscore()
                 sys.exit()
 
             elif event.type == pygame.KEYDOWN:
@@ -260,13 +268,14 @@ class GameStatus():
 
 
 def update_screen(ai_settings, screen, ships, bullets, aliens, 
-play_button, restart_button, exit_button, bar, score, status, stats):
+play_button, restart_button, exit_button, bar, score, topscore, status, stats):
     """更新屏幕上的图像，将屏幕切换为最新屏幕"""
     #重新填充屏幕
     screen.fill(ai_settings.bg_color)
     #判断碰撞
     stats.check_collisions()
     stats.get_alien_lose_score()
+    stats.fresh_topscore()
     check_alien_left(ai_settings, screen, aliens)
     ships.draw(screen)
     aliens.draw(screen)
@@ -274,6 +283,8 @@ play_button, restart_button, exit_button, bar, score, status, stats):
     bar.bar_draw()
     score.prep_scoreboard()
     score.show_score()
+    topscore.prep_scoreboard()
+    topscore.show_score()
     if not status.game_activity():
         play_button.draw_button()
         restart_button.draw_button()
